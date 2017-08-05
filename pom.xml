@@ -13,7 +13,9 @@
     <vertx.version>3.4.2</vertx.version>
     <vertx.verticle>com.redhat.labs.service.MainVerticle</vertx.verticle>
     <!-- Maven plugins -->
-    <vertx-maven-plugin.version>1.0.8</vertx-maven-plugin.version>
+    <vertx-maven-plugin.version>1.0-SNAPSHOT</vertx-maven-plugin.version>
+
+    <node-work-dir>${project.basedir}/node-out</node-work-dir>
 </properties>
 <dependencyManagement>
     <dependencies>
@@ -65,7 +67,7 @@
             <groupId>io.fabric8</groupId>
             <artifactId>vertx-maven-plugin</artifactId>
             <version>${vertx-maven-plugin.version}</version>
-            <executions>
+           <executions>
                 <execution>
                     <id>vmp</id>
                     <goals>
@@ -73,15 +75,10 @@
                         <goal>package</goal>
                     </goals>
                 </execution>
-                <execution>
-                    <goals>
-                        <goal>run</goal>
-                    </goals>
-                    <configuration>
-                        <redeploy>true</redeploy>
-                    </configuration>
-                </execution>
             </executions>
+            <configuration>
+                <redeploy>true</redeploy>
+            </configuration>
         </plugin>
         <plugin>
             <artifactId>maven-compiler-plugin</artifactId>
@@ -90,25 +87,6 @@
                     <annotationProcessor>io.vertx.serviceproxy.ServiceProxyProcessor</annotationProcessor>
                 </annotationProcessors>
             </configuration>
-        </plugin>
-        <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>build-helper-maven-plugin</artifactId>
-            <version>3.0.0</version>
-            <executions>
-                <execution>
-                    <id>add-source</id>
-                    <phase>generate-sources</phase>
-                    <goals>
-                        <goal>add-source</goal>
-                    </goals>
-                    <configuration>
-                        <sources>
-                            <source>src/main/web/src</source>
-                        </sources>
-                    </configuration>
-                </execution>
-            </executions>
         </plugin>
         <plugin>
             <groupId>com.github.eirslett</groupId>
@@ -120,11 +98,11 @@
                     <goals>
                         <goal>install-node-and-npm</goal>
                     </goals>
-                    <phase>none</phase>
+                    <phase>initialize</phase>
                 </execution>
                 <execution>
                     <id>npm_install</id>
-                    <phase>none</phase>
+                    <phase>initialize</phase>
                     <goals>
                         <goal>npm</goal>
                     </goals>
@@ -133,7 +111,7 @@
                     </configuration>
                 </execution>
                 <execution>
-                    <phase>none</phase>
+                    <phase>process-classes</phase>
                     <goals>
                         <goal>npm</goal>
                     </goals>
@@ -145,7 +123,8 @@
             <configuration>
                 <nodeVersion>v8.2.1</nodeVersion>
                 <npmVersion>5.3.0</npmVersion>
-                <workingDirectory>src/main/web</workingDirectory>
+                <workingDirectory>${node-work-dir}</workingDirectory>
+                <!--<workingDirectory>src/main/web</workingDirectory>-->
             </configuration>
         </plugin>
         <plugin>
@@ -154,12 +133,50 @@
             <version>3.0.2</version>
             <executions>
                 <execution>
+                    <id>copy-package-json</id>
+                    <phase>validate</phase>
+                    <goals>
+                        <goal>copy-resources</goal>
+                    </goals>
+                    <configuration>
+                        <outputDirectory>${node-work-dir}</outputDirectory>
+                        <overwrite>true</overwrite>
+                        <resources>
+                            <resource>
+                                <directory>src/main/web</directory>
+                                <includes>
+                                    <include>package.json</include>
+                                    <include>package-lock.json</include>
+                                </includes>
+                            </resource>
+                        </resources>
+                    </configuration>
+                </execution>
+                <execution>
+                    <id>copy-web-resources</id>
+                    <phase>process-sources</phase>
+                    <goals>
+                        <goal>copy-resources</goal>
+                    </goals>
+                    <configuration>
+                        <outputDirectory>${node-work-dir}</outputDirectory>
+                        <overwrite>true</overwrite>
+                        <resources>
+                            <resource>
+                                <directory>src/main/web</directory>
+                                <filtering>true</filtering>
+                            </resource>                                 
+                        </resources>
+                    </configuration>
+                </execution>
+                <execution>
+                    <id>copy-proxy-file</id>
                     <phase>compile</phase>
                     <goals>
                         <goal>copy-resources</goal>
                     </goals>
                     <configuration>
-                        <outputDirectory>src/main/web/src/lib</outputDirectory>
+                        <outputDirectory>${node-work-dir}/lib</outputDirectory>
                         <overwrite>true</overwrite>
                         <resources>
                             <resource>

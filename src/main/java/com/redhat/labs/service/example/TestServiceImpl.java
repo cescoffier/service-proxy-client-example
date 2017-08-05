@@ -20,7 +20,7 @@ public class TestServiceImpl implements TestService {
     }
 
     public void test(Handler<AsyncResult<String>> handler) {
-        StringBuilder sb = new StringBuilder("Test Result: ");
+        StringBuilder sb = new StringBuilder("Test Result:");
         sb.append(Instant.now().atZone(ZoneId.systemDefault()).format(DateTimeFormatter.RFC_1123_DATE_TIME));
         handler.handle(Future.succeededFuture(sb.toString()));
     }

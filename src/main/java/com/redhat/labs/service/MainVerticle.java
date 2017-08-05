@@ -32,6 +32,7 @@ public class MainVerticle extends AbstractVerticle {
 
     @Override
     public void start(Future startFuture) {
+        System.out.println("Hello !!");
         TestService svc = new TestServiceImpl(vertx);
         ProxyHelper.registerService(TestService.class, vertx, svc, TEST_SERVICE);
 

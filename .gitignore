@@ -8,3 +8,6 @@ src/main/web/node_modules
 src/main/resources/webroot/static/**/*
 src/main/resources/webroot/index.html
 src/main/web/lib/**/*
+.settings
+node-out/
+.vscode
